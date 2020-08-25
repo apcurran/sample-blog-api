@@ -5,6 +5,7 @@ const path = require("path");
 
 const { validationResult } = require("express-validator");
 const Post = require("../models/Post");
+const User = require("../models/User");
 
 exports.getPosts = async (req, res, next) => {
     try {
@@ -53,16 +54,19 @@ exports.createPost = async (req, res, next) => {
             title: title,
             content: content,
             imageUrl: imageUrl,
-            creator: {
-                name: "Alex"
-            }
+            creator: req.userId
         });
         const savedPost = await post.save();
-        console.log(savedPost);
-    
+        const user = await User.findById(req.userId);
+
+        user.posts.push(savedPost);
+
+        const savedUser = await user.save();
+
         res.status(201).json({
             message: "Post created successfully.",
-            post: savedPost
+            post: post,
+            creator: { _id: savedUser._id, name: savedUser.name }
         });
         
     } catch (err) {
@@ -130,6 +134,13 @@ exports.updatePost = async (req, res, next) => {
 
         const post = await Post.findById(postId);
 
+        if (post.creator.toString() !== req.userId) {
+            const error = new Error("Not authorized");
+            error.statusCode = 403;
+
+            throw error;
+        } 
+
         if (!post) {
             const error = new Error("Could not find post.");
             error.statusCode = 404;
@@ -173,10 +184,22 @@ exports.deletePost = async (req, res, next) => {
             throw error;
         }
 
+        if (post.creator.toString() !== req.userId) {
+            const error = new Error("Not authorized");
+            error.statusCode = 403;
+
+            throw error;
+        }
+
         // Check logged in user
         clearImage(post.imageUrl);
 
         await Post.findByIdAndRemove(postId);
+
+        const user = await User.findById(req.userId);
+
+        user.posts.pull(postId);
+        await user.save();
 
         res.status(200).json({
             message: "Post deleted"
