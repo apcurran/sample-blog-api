@@ -17,6 +17,7 @@ exports.getPosts = async (req, res, next) => {
         const posts = await Post
             .find()
             .populate("creator")
+            .sort({ createdAt: -1 })
             .skip((currentPage - 1) * perPage)
             .limit(perPage);
 
@@ -141,9 +142,9 @@ exports.updatePost = async (req, res, next) => {
             throw error;
         }
 
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate("creator");
 
-        if (post.creator.toString() !== req.userId) {
+        if (post.creator._id.toString() !== req.userId) {
             const error = new Error("Not authorized");
             error.statusCode = 403;
 
@@ -166,6 +167,8 @@ exports.updatePost = async (req, res, next) => {
         post.imageUrl = imageUrl;
 
         const updatedPost = await post.save();
+
+        io.getIO().emit("posts", { action: "update", post: updatedPost });
 
         res.status(200).json({
             message: "Post updated",
@@ -209,6 +212,8 @@ exports.deletePost = async (req, res, next) => {
 
         user.posts.pull(postId);
         await user.save();
+
+        io.getIO().emit("posts", { action: "delete", post: postId });
 
         res.status(200).json({
             message: "Post deleted"
