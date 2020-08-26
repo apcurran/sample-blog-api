@@ -60,6 +60,5 @@ app.use((error, req, res, next) => {
 
 mongoose
     .connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(result => app.listen(5000))
+    .then(() => app.listen(5000))
     .catch(err => console.error(err));
-
