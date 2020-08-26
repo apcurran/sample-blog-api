@@ -60,5 +60,12 @@ app.use((error, req, res, next) => {
 
 mongoose
     .connect(process.env.DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => app.listen(5000))
+    .then(() => {
+        const server = app.listen(5000);
+        const io = require("./socket").init(server);
+
+        io.on("connection", socket => {
+            console.log("Client connected");
+        });
+    })
     .catch(err => console.error(err));
