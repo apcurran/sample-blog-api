@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha",
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
@@ -12,12 +12,17 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.0",
+    "chai": "^4.2.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-validator": "^6.6.1",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.1.2",
     "mongoose": "^5.10.0",
     "multer": "^1.4.2",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "sinon": "^9.0.3"
   }
 }
