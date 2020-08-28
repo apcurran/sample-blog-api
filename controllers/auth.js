@@ -73,12 +73,15 @@ exports.login = async (req, res, next) => {
             userId: user._id.toString()
         });
 
+        return;
+
     } catch (err) {
         if (!err.statusCode) {
             err.statusCode = 500;
         }
 
-        next(err);   
+        next(err);
+        return err; 
     }
 }
 
